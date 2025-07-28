@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Queue Management Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-4">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8 bg-white rounded-lg shadow-sm p-4">
+  <div>
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Queue Management System</h1>
+    <p class="text-gray-600">Manage customer service requests efficiently</p>
+  </div>
+  <div class="flex items-center space-x-4">
+    <div class="text-right">
+      <div class="flex items-center space-x-2">
+        <i data-lucide="user" class="w-4 h-4 text-gray-500"></i>
+        <span class="font-medium text-gray-900" id="userName">{{user.user.first_name}}</span>
+      </div>
+      <div class="text-sm text-gray-500 capitalize text-center" id="userRole">{{user.role}}</div>
+    </div>
+
+    <!-- Display Page Button -->
+    <a href="{% url 'display' %}" class="flex items-center space-x-2 bg-transparent border border-gray-300 rounded-md px-3 py-1.5 text-sm hover:bg-gray-50">
+      <i data-lucide="monitor" class="w-4 h-4 text-gray-500"></i>
+      <span class="text-gray-900">Display</span>
+    </a>
+
+    <!-- Logout Button -->
+    <button class="flex items-center space-x-2 bg-transparent border border-gray-300 rounded-md px-3 py-1.5 text-sm hover:bg-gray-50">
+      <i data-lucide="log-out" class="w-4 h-4"></i>
+      <a href="{% url 'logout' %}" class="text-danger">Logout</a>
+    </button>
+  </div>
+</div>
+
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden p-6 flex items-center">
+        <i data-lucide="clock" class="h-8 w-8 text-yellow-600"></i>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Waiting</p>
+          <p class="text-2xl font-bold text-gray-900" id="waitingCount">{{waiting}}</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden p-6 flex items-center">
+        <i data-lucide="users" class="h-8 w-8 text-blue-600"></i>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">In Progress</p>
+          <p class="text-2xl font-bold text-gray-900" id="inProgressCount">{{progress}}</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden p-6 flex items-center">
+        <i data-lucide="monitor" class="h-8 w-8 text-green-600"></i>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Completed</p>
+          <p class="text-2xl font-bold text-gray-900" id="completedCount">{{completed}}</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden p-6 flex items-center">
+        <i data-lucide="plus" class="h-8 w-8 text-purple-600"></i>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Total Today</p>
+          <p class="text-2xl font-bold text-gray-900" id="totalCount">0</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="mb-6">
+      <div class="grid grid-cols-2 bg-gray-100 rounded-lg overflow-hidden mb-4">
+        <button class="py-2 px-4 text-sm font-medium tab-btn active" data-tab="counter">Counter Service</button>
+        <button class="py-2 px-4 text-sm font-medium tab-btn" data-tab="queue">Queue Management</button>
+        <!-- <button class="py-2 px-4 text-sm font-medium tab-btn" data-tab="display">TV Display</button> -->
+      </div>
+
+      <!-- Counter Service Tab -->
+      <div id="counter" class="tab-content">
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="p-6 border-b">
+            <h2 class="text-xl font-semibold">Add New Customer</h2>
+          </div>
+          <div class="p-6 space-y-4">
+            <form method="POST" action="{% url 'generate_token' %}">
+  {% csrf_token %}
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <input type="text" name="customer_name" placeholder="Customer Name"
+      class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm" />
+
+    <select name="service_type" class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
+      <option value="General Service">General Service</option>
+      <option value="Document Processing">Document Processing</option>
+      <option value="Payment">Payment</option>
+      <option value="Consultation">Consultation</option>
+      <option value="Technical Support">Technical Support</option>
+    </select>
+
+    <button type="submit"
+      class="inline-flex items-center justify-center bg-blue-600 text-white hover:bg-blue-700 h-10 px-4 py-2 w-full rounded-md text-sm font-medium">
+      <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+      Add to Queue
+    </button>
+  </div>
+</form>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Queue Management Tab -->
+      <div id="queue" class="tab-content hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Waiting Queue -->
+          <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div class="p-6 border-b">
+              <h2 class="text-xl font-semibold flex items-center">
+                <i data-lucide="clock" class="w-5 h-5 mr-2 text-yellow-600"></i>
+                Waiting Queue (<span id="waitingQueueCount">0</span>)
+              </h2>
+            </div>
+            <div class="p-6 space-y-3" id="waitingQueue">
+              <p class="text-gray-500 text-center py-4">No customers waiting</p>
+            </div>
+          </div>
+
+          <!-- In Progress -->
+          <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div class="p-6 border-b">
+              <h2 class="text-xl font-semibold flex items-center">
+                <i data-lucide="users" class="w-5 h-5 mr-2 text-blue-600"></i>
+                In Progress (<span id="inProgressQueueCount">0</span>)
+              </h2>
+            </div>
+            <div class="p-6 space-y-3" id="inProgressQueue">
+              <p class="text-gray-500 text-center py-4">No services in progress</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Completed Today -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden mt-6">
+          <div class="p-6 border-b">
+            <h2 class="text-xl font-semibold flex items-center">
+              <i data-lucide="monitor" class="w-5 h-5 mr-2 text-green-600"></i>
+              Completed Today (<span id="completedQueueCount">0</span>)
+            </h2>
+          </div>
+          <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="completedQueue">
+              <p class="text-gray-500 text-center py-4 col-span-full">No completed services today</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons()
+
+    // Tab switching
+    const tabButtons = document.querySelectorAll(".tab-btn")
+    const tabContents = document.querySelectorAll(".tab-content")
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        // Remove active class from all buttons
+        tabButtons.forEach(b => b.classList.remove("active", "bg-white"))
+        // Add active class to clicked button
+        btn.classList.add("active", "bg-white")
+        
+        // Hide all tab contents
+        tabContents.forEach((c) => c.classList.add("hidden"))
+        // Show selected tab content
+        const tab = btn.getAttribute("data-tab")
+        document.getElementById(tab).classList.remove("hidden")
+      })
+    })
+
+    // Initialize first tab as active
+    document.querySelector(".tab-btn").click()
+  </script>
+
+  
+  <script>
+  async function updateQueueStats() {
+  try {
+    const response = await fetch("/api/queue-stats/");
+    const data = await response.json();
+
+    // Update counts
+    document.getElementById("waitingCount").textContent = data.waiting;
+    document.getElementById("inProgressCount").textContent = data.in_progress;
+    document.getElementById("completedCount").textContent = data.completed;
+    document.getElementById("totalCount").textContent = data.total;
+    document.getElementById("waitingQueueCount").textContent = data.waiting;
+    document.getElementById("inProgressQueueCount").textContent = data.in_progress;
+
+    // Update waiting queue
+    const waitingQueueDiv = document.getElementById("waitingQueue");
+    waitingQueueDiv.innerHTML = "";
+    if (data.waiting_entries.length === 0) {
+      waitingQueueDiv.innerHTML = `<p class="text-gray-500 text-center py-4">No customers waiting</p>`;
+    } else {
+      data.waiting_entries.forEach(entry => {
+        const card = document.createElement("div");
+        card.className = "p-4 bg-yellow-50 rounded-lg border border-yellow-200";
+        card.innerHTML = `
+          <div class="flex justify-between items-center gap-4">
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-gray-900 truncate">${entry.token_number}</div>
+              <div class="text-sm text-gray-600 truncate">${entry.customer_name}</div>
+              <div class="text-xs text-gray-500 truncate">${entry.service_type}</div>
+            </div>
+            <div class="flex-shrink-0">
+              <button 
+                class="ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 bg-gray-900 text-white hover:bg-gray-800 h-9 rounded-md px-3"
+                onclick="startService(${entry.id})"
+              >
+                Start Service
+              </button>
+            </div>
+          </div>
+        `;
+        waitingQueueDiv.appendChild(card);
+      });
+    }
+
+    // Update in-progress queue
+    const inProgressQueueDiv = document.getElementById("inProgressQueue");
+    inProgressQueueDiv.innerHTML = "";
+    if (data.in_progress_entries.length === 0) {
+      inProgressQueueDiv.innerHTML = `<p class="text-gray-500 text-center py-4">No services in progress</p>`;
+    } else {
+      data.in_progress_entries.forEach(entry => {
+        const card = document.createElement("div");
+        card.className = "p-4 bg-blue-50 rounded-lg border";
+        card.innerHTML = `
+          <div class="flex justify-between items-center gap-4">
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-gray-900 truncate">${entry.token_number}</div>
+              <div class="text-sm text-gray-600 truncate">${entry.customer_name}</div>
+              <div class="text-xs text-gray-500 truncate">${entry.service_type}</div>
+            </div>
+            <div class="flex-shrink-0">
+              <button 
+                class="ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 h-9 rounded-md px-3"
+                onclick="completeService(${entry.id})"
+              >
+                Complete
+              </button>
+            </div>
+          </div>
+        `;
+        inProgressQueueDiv.appendChild(card);
+      });
+    }
+
+    // Update completed queue
+    const completedQueueDiv = document.getElementById("completedQueue");
+    completedQueueDiv.innerHTML = "";
+    if (!data.completed_entries || data.completed_entries.length === 0) {
+      completedQueueDiv.innerHTML = `<p class="text-gray-500 text-center py-4 col-span-full">No completed services today</p>`;
+    } else {
+      data.completed_entries.forEach(entry => {
+        const card = document.createElement("div");
+        card.className = "p-4 bg-green-50 rounded-lg border";
+        card.innerHTML = `
+          <div class="font-semibold text-gray-900">${entry.token_number}</div>
+          <div class="text-sm text-gray-600">${entry.customer_name}</div>
+          <div class="text-xs text-gray-500">${entry.service_type}</div>
+        `;
+        completedQueueDiv.appendChild(card);
+      });
+    }
+
+  } catch (error) {
+    console.error("Error fetching queue data:", error);
+  }
+}
+
+
+  async function startService(entryId) {
+  try {
+    const response = await fetch("/api/start-service/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCSRFToken()
+      },
+      body: JSON.stringify({ entry_id: entryId })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      updateQueueStats();  // Refresh UI
+    } else {
+      alert("Failed to start service.");
+    }
+  } catch (err) {
+    console.error("Error:", err);
+  }
+}
+
+async function completeService(entryId) {
+  try {
+    const response = await fetch("/api/complete-service/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCSRFToken()
+      },
+      body: JSON.stringify({ entry_id: entryId })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      updateQueueStats();  // Refresh the UI after successful completion
+    } else {
+      alert("Failed to complete service.");
+    }
+  } catch (err) {
+    console.error("Error:", err);
+  }
+}
+
+
+// Get CSRF token helper
+function getCSRFToken() {
+  const name = "csrftoken";
+  const cookieValue = document.cookie.split('; ')
+    .find(row => row.startsWith(name + '='))
+    ?.split('=')[1];
+  return cookieValue || '';
+}
+
+
+  // Update every 5 seconds
+  updateQueueStats();
+  setInterval(updateQueueStats, 5000);
+</script>
+
+</body>
+</html>

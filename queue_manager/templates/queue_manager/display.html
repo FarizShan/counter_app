@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Status Display</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .animate-scroll {
+      animation: scroll 10s linear infinite;
+    }
+    .animate-scroll-slow {
+      animation: scroll 20s linear infinite;
+    }
+    @keyframes scroll {
+      0% { transform: translateY(0%); }
+      100% { transform: translateY(-50%); }
+    }
+  </style>
+</head>
+<body class="bg-black text-white min-h-screen p-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold mb-2">Service Status Display</h1>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Now Serving -->
+      <div class="bg-blue-900 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-4 text-center">Now Serving</h2>
+        <div class="h-48 overflow-hidden relative">
+          {% if in_progress_entries %}
+            <div class="{% if in_progress_entries|length > 1 %}animate-scroll{% endif %} space-y-3">
+              {% for item in in_progress_entries %}
+              <div class="bg-blue-800 rounded p-4 text-center">
+                <div class="text-3xl font-bold text-yellow-400">{{ item.token_number }}</div>
+                <div class="text-xl font-semibold text-white mt-2">{{ item.customer_name }}</div>
+                <div class="text-lg text-blue-200">{{ item.service_type }}</div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center text-gray-400 py-16">
+              <div class="text-2xl">No active services</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Recently Completed -->
+      <div class="bg-green-900 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-4 text-center">Recently Completed</h2>
+        <div class="h-48 overflow-hidden relative">
+          {% if completed_entries %}
+            <div class="{% if completed_entries|length > 1 %}animate-scroll{% endif %} space-y-3">
+              {% for item in completed_entries %}
+              <div class="bg-green-800 rounded p-3 text-center">
+                <div class="text-xl font-bold text-green-300">{{ item.token_number }}</div>
+                <div class="text-base font-medium text-white">{{ item.customer_name }}</div>
+                <div class="text-sm text-green-200">{{ item.service_type }}</div>
+                {% if item.updated_at %}
+                  <div class="text-xs text-gray-300">{{ item.updated_at|time:"H:i:s" }}</div>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center text-gray-400 py-16">
+              <div class="text-xl">No completed services</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Waiting Queue -->
+    <div class="mt-8 bg-yellow-900 rounded-lg p-6">
+      <h2 class="text-2xl font-bold mb-4 text-center">Waiting Queue ({{ waiting_entries|length }})</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="text-center">
+          <div class="text-4xl font-bold text-yellow-400">{{ waiting_entries|length }}</div>
+          <div class="text-lg">Customers Waiting</div>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-center">Next in Line</h3>
+          <div class="h-32 overflow-hidden relative">
+            {% if waiting_entries %}
+              <div class="{% if waiting_entries|length > 3 %}animate-scroll-slow{% endif %} space-y-2">
+                {% for item in waiting_entries|slice:":8" %}
+                <div class="bg-yellow-800 rounded p-2 text-center">
+                  <div class="text-lg font-bold text-yellow-300">{{ item.token_number }}</div>
+                  <div class="text-sm text-white">{{ item.customer_name }}</div>
+                </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="text-center text-gray-400 py-8">
+                <div class="text-lg">No customers waiting</div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    setTimeout(() => {
+      location.reload();
+    }, 10000); // Auto-refresh every 10s
+  </script>
+</body>
+</html>
