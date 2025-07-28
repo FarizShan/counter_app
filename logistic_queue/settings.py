@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-$v%n=-d2snly&5po2f)0f^w$l09ojl8%v$po*)j7j6ndo(1nag
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['counter-app-lpym.onrender.com']
+ALLOWED_HOSTS = ['counter-app-lpym.onrender.com','*']
 
 
 

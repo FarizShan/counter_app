@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.models import User
 from .models import UserProfile,QueueEntry
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 import json
 
@@ -75,7 +76,8 @@ def register(request):
 
     else:
         return render(request, 'queue_manager/register.html')
-    
+
+@login_required(login_url='login')
 def dashboard(request):
     user = request.user  # This is the built-in User
     user_profile = user.userprofile
@@ -92,10 +94,12 @@ def dashboard(request):
     
     return render(request, 'queue_manager/dashboard.html', context)
 
+@login_required(login_url='login')
 def user_logout(request):
     logout(request)
     return redirect('login')
 
+@login_required(login_url='login')
 def generate_token(request):
     if request.method == "POST":
         name = request.POST.get("customer_name")
@@ -118,7 +122,7 @@ def generate_token(request):
 
     return redirect('dashboard')
 
-
+@login_required(login_url='login')
 def queue_stats_api(request):
     waiting = QueueEntry.objects.filter(status='waiting' , added_by=request.user)
     in_progress = QueueEntry.objects.filter(status='in-progress', added_by=request.user)  # ✅ FIXED
@@ -138,6 +142,7 @@ def queue_stats_api(request):
 
 
 @csrf_exempt
+@login_required(login_url='login')
 def start_service(request):
     if request.method == 'POST':
         try:
@@ -153,6 +158,7 @@ def start_service(request):
             return JsonResponse({'success': False, 'error': str(e)})
         
 @csrf_exempt
+@login_required(login_url='login')
 def complete_service(request):
     if request.method == 'POST':
         try:
