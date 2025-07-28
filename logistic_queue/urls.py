@@ -21,5 +21,6 @@ from django.shortcuts import redirect
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', lambda request: redirect('login')),  # ✅ redirect used here
     path('', include('queue_manager.urls'))
 ]
