@@ -1,5 +1,7 @@
 from django.urls import path
 from queue_manager import views
+from django.shortcuts import redirect  # ✅ ADD THIS
+
 
 urlpatterns = [
     path('', lambda request: redirect('login')),  # root redirect
