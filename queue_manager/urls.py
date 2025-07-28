@@ -2,6 +2,7 @@ from django.urls import path
 from queue_manager import views
 
 urlpatterns = [
+    path('', lambda request: redirect('login')),  # root redirect
     path('login/', views.user_login, name='login'),
     path('register/', views.register, name='register'),
     path('dashboard/', views.dashboard, name='dashboard'),
