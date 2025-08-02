@@ -15,13 +15,6 @@ from datetime import date
 
 # Create your views here.
 
-def create_superuser(request):
-    if not User.objects.filter(username='admin').exists():
-        User.objects.create_superuser('admin', 'admin@example.com', 'adminpassword')
-        return HttpResponse("Superuser created")
-    return HttpResponse("Superuser already exists")
-
-
 def user_login(request):
     if request.method=="POST":
         email = request.POST.get('email')
