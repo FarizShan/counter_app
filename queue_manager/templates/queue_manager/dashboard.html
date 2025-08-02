@@ -202,7 +202,9 @@
     document.getElementById("waitingCount").textContent = data.waiting;
     document.getElementById("inProgressCount").textContent = data.in_progress;
     document.getElementById("completedCount").textContent = data.completed;
+    document.getElementById("completedQueueCount").textContent = data.completed;
     document.getElementById("totalCount").textContent = data.total;
+    console.log("Queue Stats:", data);
     document.getElementById("waitingQueueCount").textContent = data.waiting;
     document.getElementById("inProgressQueueCount").textContent = data.in_progress;
 

@@ -34,7 +34,10 @@
             <div class="{% if in_progress_entries|length > 1 %}animate-scroll{% endif %} space-y-3">
               {% for item in in_progress_entries %}
               <div class="bg-blue-800 rounded p-4 text-center">
-                <div class="text-3xl font-bold text-yellow-400">{{ item.token_number }}</div>
+                <!-- <div class="text-3xl font-bold text-yellow-400">{{ item.token_number }}</div> -->
+                <div class="text-3xl font-bold text-yellow-400">T{{ item.token_number|slice:"-3:" }}</div>
+
+                 
                 <div class="text-xl font-semibold text-white mt-2">{{ item.customer_name }}</div>
                 <div class="text-lg text-blue-200">{{ item.service_type }}</div>
               </div>
@@ -56,11 +59,11 @@
             <div class="{% if completed_entries|length > 1 %}animate-scroll{% endif %} space-y-3">
               {% for item in completed_entries %}
               <div class="bg-green-800 rounded p-3 text-center">
-                <div class="text-xl font-bold text-green-300">{{ item.token_number }}</div>
+                <div class="text-xl font-bold text-green-300">T{{ item.token_number|slice:"-3:" }}</div>
                 <div class="text-base font-medium text-white">{{ item.customer_name }}</div>
-                <div class="text-sm text-green-200">{{ item.service_type }}</div>
-                {% if item.updated_at %}
-                  <div class="text-xs text-gray-300">{{ item.updated_at|time:"H:i:s" }}</div>
+                <!-- <div class="text-sm text-green-200">{{ item.service_type }}</div> -->
+                {% if item.completed_at %}
+                  <div class="text-xs text-gray-300">{{ item.completed_at|date:"D, d M Y H:i:s" }}</div>
                 {% endif %}
               </div>
               {% endfor %}
@@ -90,7 +93,7 @@
               <div class="{% if waiting_entries|length > 3 %}animate-scroll-slow{% endif %} space-y-2">
                 {% for item in waiting_entries|slice:":8" %}
                 <div class="bg-yellow-800 rounded p-2 text-center">
-                  <div class="text-lg font-bold text-yellow-300">{{ item.token_number }}</div>
+                  <div class="text-lg font-bold text-yellow-300">T{{ item.token_number|slice:"-3:" }}</div>
                   <div class="text-sm text-white">{{ item.customer_name }}</div>
                 </div>
                 {% endfor %}

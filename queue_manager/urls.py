@@ -4,7 +4,7 @@ from django.shortcuts import redirect  # ✅ ADD THIS
 
 
 urlpatterns = [
-    path('', lambda request: redirect('login')),  # root redirect
+    # path('', lambda request: redirect('login')),  # root redirect
     path('login/', views.user_login, name='login'),
     path('register/', views.register, name='register'),
     path('dashboard/', views.dashboard, name='dashboard'),
@@ -14,5 +14,6 @@ urlpatterns = [
     path('api/queue-stats/', views.queue_stats_api, name='queue_stats_api'),
     path("api/start-service/", views.start_service, name="start_service"),
     path('api/complete-service/', views.complete_service, name='complete_service'),
+    path('create-admin/', views.create_superuser),
 
 ]

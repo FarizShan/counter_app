@@ -8,9 +8,20 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 import json
+from django.utils import timezone
+from django.utils.timezone import now,localdate
+from datetime import date
 
 
 # Create your views here.
+
+def create_superuser(request):
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser('admin', 'admin@example.com', 'adminpassword')
+        return HttpResponse("Superuser created")
+    return HttpResponse("Superuser already exists")
+
+
 def user_login(request):
     if request.method=="POST":
         email = request.POST.get('email')
@@ -104,13 +115,18 @@ def generate_token(request):
     if request.method == "POST":
         name = request.POST.get("customer_name")
         service = request.POST.get("service_type")
-        
-        last_entry = QueueEntry.objects.order_by('-id').first()
-        if last_entry :
-            last_token = int(last_entry.token_number[1:])
-            new_token = f"T{last_token + 1:03d}"
-        else :
-            new_token="T001"
+        today = date.today()      
+        last_entry = QueueEntry.objects.filter(timestamp__date=today).order_by('-id').first()
+        today_str = today.strftime("%Y%m%d")
+
+        count_today = QueueEntry.objects.filter(timestamp__date=today).count()
+        next_number = count_today + 1
+        new_token = f"T{today_str}-{next_number:03d}"
+        # if last_entry :
+        #     last_token = int(last_entry.token_number[1:])
+        #     new_token = f"T{last_token + 1:03d}"
+        # else :
+        #     new_token="T001"
 
         QueueEntry.objects.create(
             customer_name=name,
@@ -124,20 +140,41 @@ def generate_token(request):
 
 @login_required(login_url='login')
 def queue_stats_api(request):
-    waiting = QueueEntry.objects.filter(status='waiting' , added_by=request.user)
-    in_progress = QueueEntry.objects.filter(status='in-progress', added_by=request.user)  # ✅ FIXED
-    completed = QueueEntry.objects.filter(status='completed', added_by=request.user)
+    today = localdate()
+
+    waiting = QueueEntry.objects.filter(
+        status='waiting',
+        # timestamp__date=today,
+        added_by=request.user
+    )
+    in_progress = QueueEntry.objects.filter(
+        status='in-progress',
+        # timestamp__date=today,
+        added_by=request.user
+    )
+    completed = QueueEntry.objects.filter(
+        status='completed',
+        # completed_at__date=today,
+        added_by=request.user
+    )
+
+    total_today = QueueEntry.objects.filter(
+        timestamp__date=today,
+        added_by=request.user
+    ).count()
 
     data = {
         "waiting": waiting.count(),
         "in_progress": in_progress.count(),
         "completed": completed.count(),
-        "total": waiting.count() + in_progress.count() + completed.count(),
-        "waiting_entries": list(waiting.values("id","token_number", "customer_name", "service_type")),
-        "in_progress_entries": list(in_progress.values("id", "token_number", "customer_name", "service_type")),  # ✅ add this
-        "completed_entries": list(completed.values("id", "token_number", "customer_name", "service_type")),  # ✅ Add this line
+        "total": total_today,
 
+        "waiting_entries": list(waiting.values("id", "token_number", "customer_name", "service_type")),
+        "in_progress_entries": list(in_progress.values("id", "token_number", "customer_name", "service_type","started_at")),
+        "completed_entries": list(completed.values("id", "token_number", "customer_name", "service_type","completed_at")),
     }
+
+
     return JsonResponse(data)
 
 
@@ -151,6 +188,7 @@ def start_service(request):
 
             queue_entry = QueueEntry.objects.get(id=entry_id)
             queue_entry.status = 'in-progress'
+            queue_entry.started_at = timezone.now()
             queue_entry.save()
 
             return JsonResponse({'success': True})
@@ -167,6 +205,7 @@ def complete_service(request):
 
             queue_entry = QueueEntry.objects.get(id=entry_id)
             queue_entry.status = 'completed'
+            queue_entry.completed_at = timezone.now()
             queue_entry.save()
 
             return JsonResponse({'success': True})
@@ -177,7 +216,8 @@ def complete_service(request):
 def display(request):
     waiting_entries = QueueEntry.objects.filter(status='waiting').order_by('-timestamp')
     in_progress_entries = QueueEntry.objects.filter(status='in-progress').order_by('-timestamp')
-    completed_entries = QueueEntry.objects.filter(status='completed').order_by('-completed_at')[:10]  # Recent 10
+    today = localdate()
+    completed_entries = QueueEntry.objects.filter(status='completed',completed_at__date=today).order_by('-completed_at')[:10]  # Recent 10
 
     data = {
         "waiting_entries": waiting_entries,
