@@ -13,8 +13,6 @@ from django.utils.timezone import now,localdate
 from datetime import date
 
 
-# Create your views here.
-
 def user_login(request):
     if request.method=="POST":
         email = request.POST.get('email')
