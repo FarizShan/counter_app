@@ -29,7 +29,7 @@ class QueueEntry(models.Model):
 
     customer_name = models.CharField(max_length=100)
     service_type = models.CharField(max_length=50, choices=SERVICE_CHOICES)
-    token_number = models.CharField(max_length=10, unique=True)
+    token_number = models.CharField(max_length=20, unique=True)
     
     status = models.CharField(
         max_length=20,
